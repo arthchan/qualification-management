@@ -1,0 +1,37 @@
+<html>
+	<body>
+		<p style="font-family: Courier New">
+		Dear {{ team_admin_name }},<br>
+			<br>
+			Listed below is/are the qualification(s)
+			to be
+			expired in {{ year }} Q{{ quarter }} for
+			team {{ team }}.
+		</p>
+		{{ email_table }}<br>
+		<p style="font-family: Courier New">
+			Please kindly remind your team members to
+			renew their qualification(s) before the
+			expiry date(s).<br>
+			<br>
+			Thank you.<br>
+			<br>
+			<br>
+		</p>
+		<p style="font-family: Courier New">
+			Regards,<br>
+			<br>
+			<b>{{ admin_name }}</b><br>
+			{{ admin_job_title }}<br>
+			{{ admin_org_unit }}<br>
+			{{ admin_business_unit }}<br>
+			{{ admin_company }}<br>
+			<a href="mailto:{{ admin_email }}">{{ admin_email }}</a><br>
+			<br>
+			<img src="cid:logo" width="111" height="42"/>
+			<br>
+			<br>
+			<a href="{{ corp_link }}" style="font-size:10px">{{ corp_link }}</a>
+		</p>
+	</body>
+</html>

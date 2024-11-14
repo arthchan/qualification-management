@@ -1,0 +1,27 @@
+<html>
+	<body>
+		<p style="font-family: Courier New">
+			Dear admin,<br>
+			<br>
+			Please note that the qualification records of the
+			<b>{{ number_of_failed }}</b> staff below were
+			<b>failed</b> to fetch.<br>
+			{{ failed_name }}<br>
+			<br>
+			<br>
+			Regards,<br>
+			<br>
+			<b>{{ admin_name }}</b><br>
+			{{ admin_job_title }}<br>
+			{{ admin_org_unit }}<br>
+			{{ admin_business_unit }}<br>
+			{{ admin_company }}<br>
+			<a href="mailto:{{ admin_email }}">{{ admin_email }}</a><br>
+			<br>
+			<img src="cid:logo" width="111" height="42"/>
+			<br>
+			<br>
+			<a href="{{ corp_link }}" style="font-size:10px">{{ corp_link }}</a>
+		</p>
+	</body>
+</html>

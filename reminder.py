@@ -148,13 +148,20 @@ def send_daily_reminder_email(config, display=False, test_date=None):
         if display:
             mail.Display()
 
+            # Print confirmation on console
+            print('[' + get_timestamp() +
+                  "] Prepared reminder email sending to " +
+                  df_staff.loc[df_staff["Staff Number"] == str(s),
+                               "Name"].item() + '.')
+
         # Send email
         else:
             mail.Send()
+
             # Print confirmation on console
             print('[' + get_timestamp() + "] Sent reminder email to " +
-                  df_staff[df_staff["Staff Number"] == s]["Name"].values[0] +
-                  '.')
+                  df_staff.loc[df_staff["Staff Number"] == str(s),
+                               "Name"].item() + '.')
 
 
 # Function for sending quarterly reminder to team head
@@ -241,9 +248,15 @@ def send_quarterly_reminder_email(
         if display:
             mail.Display()
 
+            # Print confirmation on console
+            print('[' + get_timestamp() +
+                  "] Prepared reminder email sending to team admin of team " +
+                  g + '.')
+
         # Send email
         else:
             mail.Send()
+
             # Print confirmation on console
             print('[' + get_timestamp() +
                   "] Sent reminder email to team admin of team " + g + '.')

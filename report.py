@@ -117,7 +117,8 @@ def analyse_report(config, quarter_range=None, test_date=None):
 
             # No need to check for remaining days for quarterly report
             if quarter_range is not None:
-                df_qe = df_qe[df_qe["Expiry_d"].isin(quarter_range)]
+                df_qe = df_qe[df_qe["Expiry_d"].astype(
+                    str).isin(quarter_range)]
                 df_reminder = pd.concat([df_reminder, df_qe],
                                         ignore_index=True)
                 continue

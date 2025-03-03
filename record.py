@@ -22,7 +22,7 @@ def fetch_qualification_record(config):
 
     # Initialise webdriver
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless=old")
+    options.add_argument("--headless=new")
     web = webdriver.Chrome(options=options)
 
     # Browse webpage
@@ -179,7 +179,7 @@ def fetch_practice_record(config, df):
     else:
         # Initialise webdriver
         options = webdriver.ChromeOptions()
-        options.add_argument("--headless=old")
+        options.add_argument("--headless=new")
         web = webdriver.Chrome(options=options)
 
         # Browse webpage

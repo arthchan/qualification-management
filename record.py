@@ -57,6 +57,12 @@ def fetch_qualification_record(config):
             # Click "Search" button
             search_button.click()
 
+            # Find "Data Download" button
+            search_button = WebDriverWait(web, 10).until(
+                    EC.presence_of_element_located((
+                        By.XPATH,
+                        '//*[@id="ctl00_cphContent_btnExport"]')))
+
             # Get page source
             page_source = web.page_source
             soup = BeautifulSoup(page_source, 'lxml')

@@ -58,7 +58,7 @@ def fetch_qualification_record(config):
             search_button.click()
 
             # Find "Data Download" button
-            search_button = WebDriverWait(web, 10).until(
+            WebDriverWait(web, 10).until(
                     EC.presence_of_element_located((
                         By.XPATH,
                         '//*[@id="ctl00_cphContent_btnExport"]')))
@@ -289,6 +289,12 @@ def fetch_practice_record(config, df):
 
                     # Click "Search" button
                     search_button.click()
+
+                    # Find "Data Download" button
+                    WebDriverWait(web, 10).until(
+                            EC.presence_of_element_located((
+                                By.XPATH,
+                                '//*[@id="ctl00_cphContent_btnDownLoad"]')))
 
                     # Get page source
                     page_source = web.page_source

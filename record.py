@@ -236,24 +236,6 @@ def fetch_practice_record(config, df):
                         ").setAttribute('value', '" +
                         sid + "')")
 
-                    # Find "Search" button
-                    search_button = WebDriverWait(web, 10).until(
-                        EC.presence_of_element_located(
-                            (By.XPATH,
-                             '//*[@id="ctl00_cphContent_btnSearch_Pract"]')))
-
-                    # Click "Search" button
-                    search_button.click()
-
-                    # Find "Cancel" button
-                    cancel_button = WebDriverWait(web, 10).until(
-                        EC.presence_of_element_located(
-                            (By.XPATH,
-                                '//*[@id="ctl00_cphContent_btnBack"]')))
-
-                    # Click "Cancel" button
-                    cancel_button.click()
-
                     # Find input field for qualification code
                     WebDriverWait(web, 10).until(
                         EC.presence_of_element_located(

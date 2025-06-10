@@ -56,16 +56,17 @@ def generate_report(config):
         df_all = pd.concat([df_all, df], ignore_index=True)
 
     # Export report as CSV file in local folder
-    df_all.to_csv(config["report_path"], index=False)
+    df_all.to_csv(config["report_path"], index=False, encoding='utf-8-sig')
 
     # Export report as CSV file to Personal OneDrive
     try:
-        df_all.to_csv(config["report_abs_path"], index=False)
+        df_all.to_csv(config["report_abs_path"], index=False,
+                      encoding='utf-8-sig')
 
     except BaseException:
         df_all.to_csv(config["report_abs_path"].split(".csv")[0] + '_' +
                       get_timestamp(format="%Y%m%d-%H%M") + ".csv",
-                      index=False)
+                      index=False, encoding='utf-8-sig')
 
     finally:
         pass

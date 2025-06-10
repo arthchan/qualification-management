@@ -148,7 +148,7 @@ def fetch_qualification_record(config):
                 # Save dataframe as CSV file
                 file_name = "reports/" + name + "_" + staff_id + "_" + \
                     get_timestamp(format="%Y%m%d") + ".csv"
-                df_record.to_csv(file_name, index=False)
+                df_record.to_csv(file_name, index=False, encoding="utf-8-sig")
 
                 # Go to previous page
                 web.back()

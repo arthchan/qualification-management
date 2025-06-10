@@ -49,6 +49,9 @@ def generate_report(config):
             else:
                 pass
 
+        # Replace "nan" with empty string
+        df["Note"] = df["Note"].replace("nan", '')
+
         # Append data to main dataframe
         df_all = pd.concat([df_all, df], ignore_index=True)
 

@@ -69,13 +69,19 @@ def fetch_qualification_record(config):
                 page_source = web.page_source
                 soup = BeautifulSoup(page_source, 'lxml')
 
-                # Find staff name
+                # Find staff name, organisation unit and description
                 name_and_id = soup.find(
                     "span",
                     id="ctl00_cphContent_MtrcMaster_ctl02_dgrdStaff_ctl02_" +
                     "Label8")
                 name_and_id_string = name_and_id.text.lstrip().rstrip()
                 name = name_and_id_string.replace(staff_id, "").rstrip()
+                unit = soup.find(
+                    "span",
+                    id="ctl00_cphContent_MtrcMaster_ctl02_Label3").text
+                unit_desc = soup.find(
+                    "span",
+                    id="ctl00_cphContent_MtrcMaster_ctl02_Label5").text
 
                 # Find data table
                 table = soup.find(
@@ -127,6 +133,10 @@ def fetch_qualification_record(config):
                     if i % 8 == 7:
                         df_record.loc[i // 8] = row
                         row.clear()
+
+                # Add organisation unit and description columns
+                df_record["Organization Unit"] = unit
+                df_record["Organization Unit Desc"] = unit_desc
 
                 # Remove previous files
                 try:

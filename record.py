@@ -34,133 +34,147 @@ def fetch_qualification_record(config):
     print("[" + get_timestamp() +
           "] Fetching staff qualification record...")
     # Iterate through all staff
-    for d, s in enumerate(df["Staff Number"]):
-        try:
-            staff_id = s
+    for s in df["Staff Number"]:
+        staff_id = s
 
-            # Find input field for staff number
-            staff_id_input = WebDriverWait(web, 10).until(
-                    EC.presence_of_element_located((
-                        By.XPATH,
-                        '//*[@id="ctl00_cphContent_txtEnquiryStaffNo_' +
-                        'txtStaffNo"]')))
+        # Start trial loop
+        for trial in range(3):
+            try:
+                # Find input field for staff number
+                staff_id_input = WebDriverWait(web, 10).until(
+                        EC.presence_of_element_located((
+                            By.XPATH,
+                            '//*[@id="ctl00_cphContent_txtEnquiryStaffNo_' +
+                            'txtStaffNo"]')))
 
-            # Fill in staff number
-            staff_id_input.send_keys(staff_id)
+                # Fill in staff number
+                staff_id_input.send_keys(staff_id)
 
-            # Find "Search" button
-            search_button = WebDriverWait(web, 10).until(
-                    EC.presence_of_element_located((
-                        By.XPATH,
-                        '//*[@id="ctl00_cphContent_btnEnquiry"]')))
+                # Find "Search" button
+                search_button = WebDriverWait(web, 10).until(
+                        EC.presence_of_element_located((
+                            By.XPATH,
+                            '//*[@id="ctl00_cphContent_btnEnquiry"]')))
 
-            # Click "Search" button
-            search_button.click()
+                # Click "Search" button
+                search_button.click()
 
-            # Find "Data Download" button
-            WebDriverWait(web, 10).until(
-                    EC.presence_of_element_located((
-                        By.XPATH,
-                        '//*[@id="ctl00_cphContent_btnExport"]')))
+                # Find "Data Download" button
+                WebDriverWait(web, 10).until(
+                        EC.presence_of_element_located((
+                            By.XPATH,
+                            '//*[@id="ctl00_cphContent_btnExport"]')))
 
-            # Get page source
-            page_source = web.page_source
-            soup = BeautifulSoup(page_source, 'lxml')
+                # Get page source
+                page_source = web.page_source
+                soup = BeautifulSoup(page_source, 'lxml')
 
-            # Find staff name
-            name_and_id = soup.find(
-                "span",
-                id="ctl00_cphContent_MtrcMaster_ctl02_dgrdStaff_ctl02_" +
-                "Label8")
-            name_and_id_string = name_and_id.text.lstrip().rstrip()
-            name = name_and_id_string.replace(staff_id, "").rstrip()
+                # Find staff name
+                name_and_id = soup.find(
+                    "span",
+                    id="ctl00_cphContent_MtrcMaster_ctl02_dgrdStaff_ctl02_" +
+                    "Label8")
+                name_and_id_string = name_and_id.text.lstrip().rstrip()
+                name = name_and_id_string.replace(staff_id, "").rstrip()
 
-            # Find data table
-            table = soup.find(
-                "table",
-                id="ctl00_cphContent_MtrcMaster_ctl02_dgrdStaff_ctl02_" +
-                "dgrdStaffQual")
-            entries = table.find_all("td")
+                # Find data table
+                table = soup.find(
+                    "table",
+                    id="ctl00_cphContent_MtrcMaster_ctl02_dgrdStaff_ctl02_" +
+                    "dgrdStaffQual")
+                entries = table.find_all("td")
 
-            # Initialise dataframe
-            df_record = pd.DataFrame(
-                columns=[
-                    "Qualification Code",
-                    "Qualification",
-                    "First Obtain",
-                    "Last Refresh",
-                    "Expiry",
-                    "Due for Refresh/Examination",
-                    "Last Practice/Attachment",
-                    "Status",
-                    "Note"
-                ]
-            )
+                # Initialise dataframe
+                df_record = pd.DataFrame(
+                    columns=[
+                        "Qualification Code",
+                        "Qualification",
+                        "First Obtain",
+                        "Last Refresh",
+                        "Expiry",
+                        "Due for Refresh/Examination",
+                        "Last Practice/Attachment",
+                        "Status",
+                        "Note"
+                    ]
+                )
 
-            # Iterate through all entries in the table
-            row = []
-            for i, e in enumerate(entries):
-                text = e.text.lstrip().rstrip()
+                # Iterate through all entries in the table
+                row = []
+                for i, e in enumerate(entries):
+                    text = e.text.lstrip().rstrip()
 
-                # Handle qualification code and qualification
-                if i % 8 == 0:
-                    if " " in text:
-                        # Get qualification code
-                        text_1 = text.split(" ")[0]
-                        row.append(text_1)
+                    # Handle qualification code and qualification
+                    if i % 8 == 0:
+                        if " " in text:
+                            # Get qualification code
+                            text_1 = text.split(" ")[0]
+                            row.append(text_1)
 
-                        # Get qualification
-                        text_2 = text.replace(text_1, "").lstrip()
-                        row.append(text_2)
+                            # Get qualification
+                            text_2 = text.replace(text_1, "").lstrip()
+                            row.append(text_2)
+
+                        else:
+                            row.append("")
+                            row.append(text)
 
                     else:
-                        row.append("")
+                        # Get date
                         row.append(text)
 
-                else:
-                    # Get date
-                    row.append(text)
+                    # Write row to dataframe
+                    if i % 8 == 7:
+                        df_record.loc[i // 8] = row
+                        row.clear()
 
-                # Write row to dataframe
-                if i % 8 == 7:
-                    df_record.loc[i // 8] = row
-                    row.clear()
+                # Remove previous files
+                try:
+                    for previous_file in glob.glob("reports/" + name + '*'):
+                        os.remove(previous_file)
+                except BaseException:
+                    pass
 
-            # Remove previous files
-            try:
-                for previous_file in glob.glob("reports/" + name + '*'):
-                    os.remove(previous_file)
+                # Save dataframe as CSV file
+                file_name = "reports/" + name + "_" + staff_id + "_" + \
+                    get_timestamp(format="%Y%m%d") + ".csv"
+                df_record.to_csv(file_name, index=False)
+
+                # Go to previous page
+                web.back()
+
+                # Find input field for staff number
+                staff_id_input = WebDriverWait(web, 10).until(
+                        EC.presence_of_element_located((
+                            By.XPATH,
+                            '//*[@id="ctl00_cphContent_txtEnquiryStaffNo_' +
+                            'txtStaffNo"]')))
+
+                # Clear previous search
+                staff_id_input.clear()
+
+                # Exit trial loop if all qualification records are fetched
+                break
+
             except BaseException:
-                pass
 
-            # Save dataframe as CSV file
-            file_name = "reports/" + name + "_" + staff_id + "_" + \
-                get_timestamp(format="%Y%m%d") + ".csv"
-            df_record.to_csv(file_name, index=False)
+                print("[" + get_timestamp() +
+                      "] Failed to fetch qualification record for " +
+                      df[df["Staff Number"] == s]["Name"].values[0] +
+                      " (Trial #" + str(trial + 1) + ").")
 
-            # Go to previous page
-            web.back()
+                # Go to original page
+                web.get(config["enquiry_qualification_link"])
 
-            # Find input field for staff number
-            staff_id_input = WebDriverWait(web, 10).until(
-                    EC.presence_of_element_located((
-                        By.XPATH,
-                        '//*[@id="ctl00_cphContent_txtEnquiryStaffNo_' +
-                        'txtStaffNo"]')))
+                # Exit trial loop if last trial
+                if trial == 2:
+                    # Append staff number to failed array
+                    failed.append(s)
 
-            # Clear previous search
-            staff_id_input.clear()
+                    break
 
-        except BaseException:
-            # Append staff number to failed array
-            failed.append(s)
-
-            print("[" + get_timestamp() +
-                  "] Failed to fetch record for " +
-                  df[df["Staff Number"] == s]["Name"].values[0] + '.')
-
-            # Go to original page
-            web.get(config["enquiry_qualification_link"])
+                # Continue trial loop if not last trial
+                continue
 
     # Quit web
     web.quit()
@@ -213,88 +227,118 @@ def fetch_practice_record(config, df):
                 # If there is practice requirement
                 if row["Qualification Code"] in config["has_practice"]:
 
-                    # Find "Clear" button
-                    clear_button = WebDriverWait(web, 10).until(
-                        EC.presence_of_element_located(
-                            (By.XPATH,
-                             '//*[@id="ctl00_cphContent_btnClear_Pract"]')))
+                    # Start trial loop
+                    for trial in range(3):
+                        try:
+                            # Find "Clear" button
+                            clear_button = WebDriverWait(web, 10).until(
+                                EC.presence_of_element_located(
+                                    (By.XPATH,
+                                     '//*[@id="ctl00_cphContent_btnClear_' +
+                                     'Pract"]')))
 
-                    # Click "Clear" button
-                    clear_button.click()
+                            # Click "Clear" button
+                            clear_button.click()
 
-                    # Find input field for staff number
-                    WebDriverWait(web, 10).until(
-                        EC.presence_of_element_located(
-                            (By.XPATH,
-                             '//*[@id="ctl00_cphContent_txtSearchStaff' +
-                             '_Pract_txtStaffNo"]')))
+                            # Find input field for staff number
+                            WebDriverWait(web, 10).until(
+                                EC.presence_of_element_located(
+                                    (By.XPATH,
+                                     '//*[@id="ctl00_cphContent_txtSearch' +
+                                     'Staff_Pract_txtStaffNo"]')))
 
-                    # Fill in staff number
-                    web.execute_script(
-                        "document.getElementById(" +
-                        "'ctl00_cphContent_txtSearchStaff_Pract_txtStaffNo'" +
-                        ").setAttribute('value', '" +
-                        sid + "')")
+                            # Fill in staff number
+                            web.execute_script(
+                                "document.getElementById(" +
+                                "'ctl00_cphContent_txtSearchStaff_" +
+                                "Pract_txtStaffNo'" +
+                                ").setAttribute('value', '" +
+                                sid + "')")
 
-                    # Find input field for qualification code
-                    WebDriverWait(web, 10).until(
-                        EC.presence_of_element_located(
-                            (By.XPATH,
-                             '//*[@id="ctl00_cphContent_txtQual_Pract"]')))
+                            # Find input field for qualification code
+                            WebDriverWait(web, 10).until(
+                                EC.presence_of_element_located(
+                                    (By.XPATH,
+                                     '//*[@id="ctl00_cphContent_txtQual_' +
+                                     'Pract"]')))
 
-                    # Fill in qualification code
-                    web.execute_script(
-                        "document.getElementById(" +
-                        "'ctl00_cphContent_txtQual_Pract'" +
-                        ").setAttribute('value', '" +
-                        row["Qualification Code"] + "')")
+                            # Fill in qualification code
+                            web.execute_script(
+                                "document.getElementById(" +
+                                "'ctl00_cphContent_txtQual_Pract'" +
+                                ").setAttribute('value', '" +
+                                row["Qualification Code"] + "')")
 
-                    # Find start date input field
-                    WebDriverWait(web, 10).until(
-                        EC.presence_of_element_located(
-                            (By.XPATH,
-                             '//*[@id="ctl00_cphContent_' +
-                             'txtDateForSearchFrom_dateTextBox"]')))
+                            # Find start date input field
+                            WebDriverWait(web, 10).until(
+                                EC.presence_of_element_located(
+                                    (By.XPATH,
+                                     '//*[@id="ctl00_cphContent_' +
+                                     'txtDateForSearchFrom_dateTextBox"]')))
 
-                    # Input start date
-                    web.execute_script(
-                        "document.getElementById(" +
-                        "'ctl00_cphContent_txtDateForSearchFrom_dateTextBox'" +
-                        ").setAttribute('value', '" +
-                        row["Last Refresh_d"] + "')")
+                            # Input start date
+                            web.execute_script(
+                                "document.getElementById(" +
+                                "'ctl00_cphContent_txtDateForSearchFrom_" +
+                                "dateTextBox'" +
+                                ").setAttribute('value', '" +
+                                row["Last Refresh_d"] + "')")
 
-                    # Find "Search" button
-                    search_button = WebDriverWait(web, 10).until(
-                        EC.presence_of_element_located(
-                            (By.XPATH,
-                             '//*[@id="ctl00_cphContent_btnSearch_Pract"]')))
+                            # Find "Search" button
+                            search_button = WebDriverWait(web, 10).until(
+                                EC.presence_of_element_located(
+                                    (By.XPATH,
+                                     '//*[@id="ctl00_cphContent_btnSearch_' +
+                                     'Pract"]')))
 
-                    # Click "Search" button
-                    search_button.click()
+                            # Click "Search" button
+                            search_button.click()
 
-                    # Find "Data Download" button
-                    WebDriverWait(web, 10).until(
-                            EC.presence_of_element_located((
-                                By.XPATH,
-                                '//*[@id="ctl00_cphContent_btnDownLoad"]')))
+                            # Find "Data Download" button
+                            WebDriverWait(web, 10).until(
+                                    EC.presence_of_element_located((
+                                        By.XPATH,
+                                        '//*[@id="ctl00_cphContent_' +
+                                        'btnDownLoad"]')))
 
-                    # Get page source
-                    page_source = web.page_source
-                    soup = BeautifulSoup(page_source, 'lxml')
+                            # Get page source
+                            page_source = web.page_source
+                            soup = BeautifulSoup(page_source, 'lxml')
 
-                    # Find number of record found
-                    df.at[i, "Last Practice/Attachment"] = soup.find(
-                        "span", id="ctl00_cphContent_lblRecordCount"
-                    ).text.split(":")[1]
+                            # Find number of record found
+                            df.at[i, "Last Practice/Attachment"] = soup.find(
+                                "span", id="ctl00_cphContent_lblRecordCount"
+                            ).text.split(":")[1]
 
-                    # Find "Cancel" button
-                    cancel_button = WebDriverWait(web, 10).until(
-                        EC.presence_of_element_located(
-                            (By.XPATH,
-                             '//*[@id="ctl00_cphContent_btnBack"]')))
+                            # Find "Cancel" button
+                            cancel_button = WebDriverWait(web, 10).until(
+                                EC.presence_of_element_located(
+                                    (By.XPATH,
+                                     '//*[@id="ctl00_cphContent_btnBack"]')))
 
-                    # Click "Cancel" button
-                    cancel_button.click()
+                            # Click "Cancel" button
+                            cancel_button.click()
+
+                            # Exit trial loop if practice record is fetched
+                            break
+
+                        except BaseException:
+                            print("[" + get_timestamp() +
+                                  "] Failed to fetch practice record for " +
+                                  df[df["Staff ID"] == sid][
+                                      "Name"].values[0] +
+                                  " (Trial #" + str(trial + 1) + ").")
+
+                            # Go to original page
+                            web.get(config["enquiry_practice_link"])
+
+                            # Exit trial loop if last trial
+                            if trial == 2:
+                                df.at[i, "Last Practice/Attachment"] = '?'
+                                break
+
+                            # Continue trial loop if not last trial
+                            continue
 
                 else:
                     pass

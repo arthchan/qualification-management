@@ -22,7 +22,8 @@ def build_reminder_content(config, mode, df):
     df = fetch_practice_record(config, df)
 
     # Drop uneccessary columns
-    df.drop(["Staff ID", "Qualification Code", "Status", "Note", "Expiry_d",
+    df.drop(["Staff ID", "Qualification Code", "Status", "Note",
+             "Organization Unit", "Organization Unit Desc", "Expiry_d",
              "First Obtain_d", "Due for Refresh/Examination", "Last Refresh_d"
              ], axis=1, inplace=True)
 
